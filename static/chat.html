@@ -66,18 +66,13 @@
     <div class="muted">FAQ: <a href="/api/faq" target="_blank">читать</a></div>
   </div>
 
-<div class="topbar">
-  <div style="display:flex; align-items:center; gap:10px;">
-    <img id="avatar" src="default-avatar.png" alt="avatar" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
-    <input id="nickname" type="text" placeholder="Ваш ник" style="background:transparent; border:none; color:var(--text); font-weight:bold; width:120px;">
-    <span class="muted" id="status">• подключение...</span>
-  </div>
-  <div>
-    <input type="file" id="avatarUpload" accept="image/*" style="display:none;">
-    <button onclick="document.getElementById('avatarUpload').click()">Загрузить аватар</button>
-    <a href="/static/login.html">Сменить аккаунт</a>
-  </div>
-</div>
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <strong id="who"></strong>
+        <span class="muted" id="status">• подключение...</span>
+      </div>
+      <div>
         <a href="/static/login.html">Сменить аккаунт</a>
       </div>
     </div>
