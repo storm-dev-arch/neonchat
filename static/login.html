@@ -42,25 +42,68 @@
     a:hover{text-decoration:underline}
     .brand{display:flex; align-items:center; gap:8px; margin-bottom:14px; opacity:.95}
     .dot{width:10px; height:10px; border-radius:50%; background:radial-gradient(circle at 30% 30%, #fff, var(--acc) 35%, transparent 40%); box-shadow:0 0 16px var(--acc)}
+    .tab-switch {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 17px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 6px 22px;
+      border-radius: 10px;
+      transition: background 0.15s;
+    }
+    .tab-btn.active {
+      background: linear-gradient(135deg, var(--acc), var(--neon));
+      color: #fff;
+    }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
   <div class="card">
     <div class="brand"><div class="dot"></div><strong>NeonChat</strong></div>
-    <h1>Вход по логину и паролю</h1>
-    <p class="sub">Введите ваш логин и пароль для доступа к чату</p>
-
-    <label>Логин</label>
-    <input id="login" placeholder="Ваш логин" />
-
-    <label style="margin-top:16px">Пароль</label>
-    <input id="password" type="password" placeholder="Ваш пароль" />
-
-    <div class="row" style="margin-top:18px">
-      <button id="loginBtn">Войти</button>
-      <button class="secondary" id="toChatBtn">У меня уже есть токен</button>
+    <div class="tab-switch">
+      <button class="tab-btn active" id="tabLoginBtn">Вход</button>
+      <button class="tab-btn" id="tabRegisterBtn">Регистрация</button>
     </div>
-    <div class="hint" id="loginHint"></div>
+
+    <!-- Login form -->
+    <div id="loginForm">
+      <h1>Вход по логину и паролю</h1>
+      <p class="sub">Введите ваш логин и пароль для доступа к чату</p>
+      <label>Логин</label>
+      <input id="login" placeholder="Ваш логин" />
+      <label style="margin-top:16px">Пароль</label>
+      <input id="password" type="password" placeholder="Ваш пароль" />
+      <div class="row" style="margin-top:18px">
+        <button id="loginBtn">Войти</button>
+        <button class="secondary" id="toChatBtn">У меня уже есть токен</button>
+      </div>
+      <div class="hint" id="loginHint"></div>
+    </div>
+
+    <!-- Register form -->
+    <div id="registerForm" class="hidden">
+      <h1>Регистрация</h1>
+      <p class="sub">Создайте новый аккаунт для доступа к чату</p>
+      <label>Логин</label>
+      <input id="regLogin" placeholder="Придумайте логин" />
+      <label style="margin-top:16px">Пароль</label>
+      <input id="regPassword" type="password" placeholder="Придумайте пароль" />
+      <label style="margin-top:16px">Имя (опционально)</label>
+      <input id="regName" placeholder="Ваше имя" />
+      <div class="row" style="margin-top:18px">
+        <button id="registerBtn">Зарегистрироваться</button>
+      </div>
+      <div class="hint" id="registerHint"></div>
+    </div>
 
     <div class="links">
       <a href="/api/policy" target="_blank">Политика конфиденциальности</a>
@@ -69,31 +112,70 @@
   </div>
 
   <script>
-    const $ = (id)=>document.getElementById(id);
+    const $ = id => document.getElementById(id);
 
-    $("loginBtn").onclick = async ()=>{
+    // Tab switching logic
+    $("tabLoginBtn").onclick = () => {
+      $("tabLoginBtn").classList.add("active");
+      $("tabRegisterBtn").classList.remove("active");
+      $("loginForm").classList.remove("hidden");
+      $("registerForm").classList.add("hidden");
+    };
+    $("tabRegisterBtn").onclick = () => {
+      $("tabRegisterBtn").classList.add("active");
+      $("tabLoginBtn").classList.remove("active");
+      $("registerForm").classList.remove("hidden");
+      $("loginForm").classList.add("hidden");
+    };
+
+    // Login logic
+    $("loginBtn").onclick = async () => {
       const login = $("login").value.trim();
       const password = $("password").value.trim();
-      if(!login || !password){
+      if (!login || !password) {
         alert("Введите логин и пароль");
         return;
       }
-      const r = await fetch("/api/login",{
-        method:"POST",
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({login, password})
+      const r = await fetch("/api/login", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ login, password })
       });
       const j = await r.json();
-      if(j.ok){
+      if (j.ok) {
         localStorage.setItem("token", j.token);
         localStorage.setItem("me", JSON.stringify(j.user));
         location.href = "/static/chat.html";
       } else {
-        $("loginHint").textContent = "Ошибка: " + (j.detail||"Неверный логин или пароль");
+        $("loginHint").textContent = "Ошибка: " + (j.detail || "Неверный логин или пароль");
       }
     };
 
-    $("toChatBtn").onclick = ()=> location.href="/static/chat.html";
+    // Registration logic
+    $("registerBtn").onclick = async () => {
+      const login = $("regLogin").value.trim();
+      const password = $("regPassword").value.trim();
+      const name = $("regName").value.trim();
+      if (!login || !password) {
+        alert("Введите логин и пароль");
+        return;
+      }
+      const r = await fetch("/api/register", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ login, password, name })
+      });
+      const j = await r.json();
+      if (j.ok) {
+        localStorage.setItem("token", j.token);
+        localStorage.setItem("me", JSON.stringify(j.user));
+        location.href = "/static/chat.html";
+      } else {
+        $("registerHint").textContent = "Ошибка: " + (j.detail || "Не удалось зарегистрироваться");
+      }
+    };
+
+    $("toChatBtn").onclick = () => location.href = "/static/chat.html";
   </script>
 </body>
 </html>
