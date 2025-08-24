@@ -18,7 +18,7 @@
     }
     .sidebar{
       width:280px; border-right:1px solid rgba(148,163,184,0.15); padding:16px; backdrop-filter: blur(6px);
-      background:rgba(10,16,28,0.5)
+      background:rgba(10,16,28,0.5);
     }
     .brand{display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.3px}
     .glow{width:12px; height:12px; border-radius:50%; background:radial-gradient(circle at 30% 30%, #fff, var(--acc) 35%, transparent 45%); box-shadow:0 0 18px var(--acc)}
@@ -30,9 +30,14 @@
     .msg{
       max-width:70%; padding:10px 12px; border-radius:14px; background:rgba(17,25,40,0.65);
       box-shadow:0 6px 16px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(148,163,184,0.12);
-      backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px); display:flex; align-items:flex-start; gap:10px;
     }
     .msg.me{ align-self:flex-end; background:linear-gradient(135deg, rgba(59,130,246,0.25), rgba(139,92,246,0.25)); }
+    .msg-avatar{
+      width:36px; height:36px; border-radius:50%; object-fit:cover; background:#232946; flex-shrink:0;
+      box-shadow:0 2px 8px rgba(59,130,246,0.13);
+    }
+    .msg-content{flex:1;}
     .msg small{display:block; color:var(--muted); margin-top:6px}
     .composer{
       border-top:1px solid rgba(148,163,184,0.15); padding:10px; display:flex; gap:10px; background:rgba(10,16,28,0.6); backdrop-filter: blur(6px);
@@ -53,6 +58,13 @@
     }
     a { color:#93c5fd; text-decoration:none }
     a:hover{ text-decoration:underline }
+    .profile-form{
+      display:flex; flex-direction:column; gap:8px; margin-bottom:16px; background:rgba(17,25,40,0.13); padding:10px; border-radius:13px;
+    }
+    .profile-form label{font-size:13px; color:var(--muted);}
+    .profile-form input[type="file"]{padding:0;}
+    .profile-form input[type="text"]{height:38px;}
+    .profile-avatar-preview{width:48px; height:48px; border-radius:50%; object-fit:cover; margin-bottom:6px;}
     @media (max-width:900px){ .sidebar{display:none} }
   </style>
 </head>
@@ -76,6 +88,16 @@
         <a href="/static/login.html">Сменить аккаунт</a>
       </div>
     </div>
+    
+    <form id="profileForm" class="profile-form">
+      <label for="nickname">Никнейм:</label>
+      <input type="text" id="nickname" maxlength="32"/>
+      <label for="avatar">Аватарка:</label>
+      <input type="file" id="avatar" accept="image/*"/>
+      <img id="avatarPreview" class="profile-avatar-preview" src="" alt="Аватар" style="display:none;">
+      <button type="submit">Сохранить профиль</button>
+    </form>
+
     <div class="chat" id="chat"></div>
     <div class="composer">
       <textarea id="text" placeholder="Напишите сообщение..."></textarea>
@@ -85,21 +107,40 @@
 
   <script>
     const chat = document.getElementById("chat");
-    const me = JSON.parse(localStorage.getItem("me") || "{}");
+    let me = JSON.parse(localStorage.getItem("me") || "{}");
     const token = localStorage.getItem("token");
     const who = document.getElementById("who");
     const statusEl = document.getElementById("status");
+
+    // профиль
+    const nicknameInput = document.getElementById("nickname");
+    const avatarInput = document.getElementById("avatar");
+    const avatarPreview = document.getElementById("avatarPreview");
+    const profileForm = document.getElementById("profileForm");
 
     if(!token){
       location.href="/static/login.html";
     }
 
-    who.textContent = me?.phone ? ("Вы: " + me.phone) : "Вы";
+    // Инициализация профиля
+    nicknameInput.value = me?.nickname || me?.phone || "";
+    if(me?.avatar){
+      avatarPreview.src = me.avatar;
+      avatarPreview.style.display = "";
+    }
+    who.textContent = me?.nickname ? ("Вы: " + me.nickname) : (me?.phone ? ("Вы: " + me.phone) : "Вы");
 
     function renderMessage(m, isMe){
       const el = document.createElement("div");
       el.className = "msg" + (isMe ? " me" : "");
-      el.innerHTML = `<div>${escapeHtml(m.text)}</div><small>${m.sender} • ${new Date(m.ts).toLocaleTimeString()}</small>`;
+      const avatar = m.avatar || "/static/default-avatar.png";
+      const nickname = m.nickname || m.sender;
+      el.innerHTML = `
+        <img class="msg-avatar" src="${escapeHtml(avatar)}" alt="avatar" onerror="this.src='/static/default-avatar.png'"/>
+        <div class="msg-content">
+          <div>${escapeHtml(m.text)}</div>
+          <small>${escapeHtml(nickname)} • ${new Date(m.ts).toLocaleTimeString()}</small>
+        </div>`;
       chat.appendChild(el);
       chat.scrollTop = chat.scrollHeight;
     }
@@ -134,8 +175,55 @@
       ws?.send(JSON.stringify({type:"message", text: val}));
       t.value = "";
     };
+
+    // preview аватарки
+    avatarInput.onchange = function(){
+      const file = avatarInput.files[0];
+      if(file){
+        const reader = new FileReader();
+        reader.onload = function(e){
+          avatarPreview.src = e.target.result;
+          avatarPreview.style.display = "";
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+
+    // отправка профиля (заменить на ваш API)
+    profileForm.onsubmit = async function(e){
+      e.preventDefault();
+      const nickname = nicknameInput.value.trim();
+      let avatarUrl = me.avatar || "";
+      if(avatarInput.files[0]){
+        // Загрузка аватарки на сервер, пример для FormData:
+        const formData = new FormData();
+        formData.append("avatar", avatarInput.files[0]);
+        // Предполагается, что есть эндпоинт /api/upload-avatar
+        const res = await fetch("/api/upload-avatar", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData
+        });
+        const data = await res.json();
+        if(data.url) avatarUrl = data.url;
+      }
+      // Сохраняем профиль
+      // Предполагается, что есть эндпоинт /api/update-profile
+      await fetch("/api/update-profile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ nickname, avatar: avatarUrl })
+      });
+      // Обновляем локальные данные
+      me.nickname = nickname;
+      me.avatar = avatarUrl;
+      localStorage.setItem("me", JSON.stringify(me));
+      who.textContent = "Вы: " + nickname;
+      alert("Профиль обновлен!");
+    };
   </script>
 </body>
 </html>
-
-
