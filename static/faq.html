@@ -1,0 +1,31 @@
+<!-- static/faq.html -->
+<!DOCTYPE html>
+<html lang="ru"><head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>FAQ — NeonChat</title>
+  <style>
+    body{margin:0; font-family:system-ui, Segoe UI, Inter, Arial; background:#0F172A; color:#E5E7EB}
+    .wrap{max-width:900px; margin:40px auto; padding:0 16px}
+    .card{background:rgba(17,25,40,0.65); border:1px solid rgba(148,163,184,0.12); border-radius:14px; padding:22px}
+    h1{margin-top:0} dt{font-weight:700; margin-top:14px} dd{margin-left:0; color:#cbd5e1}
+    a{color:#93c5fd}
+  </style>
+</head><body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Частые вопросы</h1>
+      <dl>
+        <dt>Как войти?</dt>
+        <dd>Введите номер, получите код (в демо: 123456), подтвердите и попадёте в чат.</dd>
+        <dt>Это общий чат?</dt>
+        <dd>Да, текущая версия — одна глобальная комната для всех онлайн-пользователей.</dd>
+        <dt>Сообщения сохраняются?</dt>
+        <dd>Пока — только в памяти сервера. При перезапуске история обнуляется.</dd>
+        <dt>Есть ли end‑to‑end шифрование?</dt>
+        <dd>В демо нет. Для продакшена планируем E2EE с обменом ключей на клиенте.</dd>
+        <dt>Где посмотреть политику?</dt>
+        <dd>Откройте <a href="/api/policy" target="_blank">Политика конфиденциальности</a>.</dd>
+      </dl>
+    </div>
+  </div>
+</body></html>

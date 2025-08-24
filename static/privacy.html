@@ -1,0 +1,36 @@
+<!-- static/privacy.html -->
+<!DOCTYPE html>
+<html lang="ru"><head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Политика конфиденциальности — NeonChat</title>
+  <style>
+    body{margin:0; font-family:system-ui, Segoe UI, Inter, Arial; background:#0F172A; color:#E5E7EB}
+    .wrap{max-width:900px; margin:40px auto; padding:0 16px}
+    .card{background:rgba(17,25,40,0.65); border:1px solid rgba(148,163,184,0.12); border-radius:14px; padding:22px}
+    h1{margin-top:0} h2{margin-bottom:6px}
+    p, li{color:#cbd5e1}
+    a{color:#93c5fd}
+  </style>
+</head><body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Политика конфиденциальности</h1>
+      <p>Мы уважаем вашу приватность. Данный прототип хранит данные (пользователи, сообщения) в памяти сервера и удаляет их при перезапуске.</p>
+      <h2>Какие данные собираются</h2>
+      <ul>
+        <li>Номер телефона для входа</li>
+        <li>Сообщения, отправленные в общий чат</li>
+        <li>Техническая информация соединения WebSocket</li>
+      </ul>
+      <h2>Как используются данные</h2>
+      <ul>
+        <li>Для аутентификации и отправки сообщений</li>
+        <li>Для обеспечения работы чата в реальном времени</li>
+      </ul>
+      <h2>Хранение</h2>
+      <p>Данные в демо не сохраняются на диск. Для продакшена используйте БД и зашифрованное хранилище секретов.</p>
+      <h2>Контакты</h2>
+      <p>Вопросы по приватности: privacy@neonchat.local</p>
+    </div>
+  </div>
+</body></html>
