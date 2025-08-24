@@ -47,24 +47,20 @@
 <body>
   <div class="card">
     <div class="brand"><div class="dot"></div><strong>NeonChat</strong></div>
-    <h1>Вход по номеру</h1>
-    <p class="sub">Получите код в SMS (в демо используем 123456)</p>
+    <h1>Вход по логину и паролю</h1>
+    <p class="sub">Введите ваш логин и пароль для доступа к чату</p>
 
-    <label>Номер телефона</label>
-    <input id="phone" placeholder="+49 170 0000000" />
+    <label>Логин</label>
+    <input id="login" placeholder="Ваш логин" />
 
-    <div class="row" style="margin-top:14px">
-      <button id="sendOtpBtn">Получить код</button>
+    <label style="margin-top:16px">Пароль</label>
+    <input id="password" type="password" placeholder="Ваш пароль" />
+
+    <div class="row" style="margin-top:18px">
+      <button id="loginBtn">Войти</button>
       <button class="secondary" id="toChatBtn">У меня уже есть токен</button>
     </div>
-    <div class="hint" id="otpHint"></div>
-
-    <label style="margin-top:16px">Код из SMS</label>
-    <input id="code" placeholder="123456" />
-
-    <div class="row" style="margin-top:14px">
-      <button id="verifyBtn">Войти</button>
-    </div>
+    <div class="hint" id="loginHint"></div>
 
     <div class="links">
       <a href="/api/policy" target="_blank">Политика конфиденциальности</a>
@@ -74,31 +70,29 @@
 
   <script>
     const $ = (id)=>document.getElementById(id);
-    $("sendOtpBtn").onclick = async ()=>{
-      const phone = $("phone").value.trim();
-      if(!phone){ alert("Введите номер"); return; }
-      const r = await fetch("/api/send_otp",{method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify({phone})});
-      const j = await r.json();
-      if(j.ok){
-        $("otpHint").textContent = "Код отправлен. В демо используйте: " + j.dev_otp;
-      } else {
-        alert("Ошибка: " + (j.detail||""));
+
+    $("loginBtn").onclick = async ()=>{
+      const login = $("login").value.trim();
+      const password = $("password").value.trim();
+      if(!login || !password){
+        alert("Введите логин и пароль");
+        return;
       }
-    };
-    $("verifyBtn").onclick = async ()=>{
-      const phone = $("phone").value.trim();
-      const code = $("code").value.trim();
-      if(!phone || !code){ alert("Введите номер и код"); return; }
-      const r = await fetch("/api/verify_otp",{method:"POST", headers:{'Content-Type':'application/json'}, body:JSON.stringify({phone, code})});
+      const r = await fetch("/api/login",{
+        method:"POST",
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({login, password})
+      });
       const j = await r.json();
       if(j.ok){
         localStorage.setItem("token", j.token);
         localStorage.setItem("me", JSON.stringify(j.user));
         location.href = "/static/chat.html";
       } else {
-        alert("Ошибка: " + (j.detail||""));
+        $("loginHint").textContent = "Ошибка: " + (j.detail||"Неверный логин или пароль");
       }
     };
+
     $("toChatBtn").onclick = ()=> location.href="/static/chat.html";
   </script>
 </body>
